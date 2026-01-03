@@ -10,6 +10,8 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "DataDuels — Practice DSA, Duel Live",
@@ -23,7 +25,14 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (session) {
+    redirect("/welcome");
+  }
+
   return (
     <div className={`${inter.className} relative min-h-screen flex items-center justify-center bg-background`}>
       <NetworkBackgroundClient />
@@ -37,7 +46,7 @@ export default function Home() {
 
           <p className="max-w-lg text-lg text-muted-foreground">
             Train topic-wise problems and sharpen your skills. Solve problems
-            side-by-side with others when matchmaking is available. Streaks,
+            side-by-side against others through matchmaking and solidify your problem solving skills. Streaks,
             levels, and leaderboards help you track progress.
           </p>
 
@@ -48,8 +57,8 @@ export default function Home() {
             <CardContent>
               <ol className="list-inside list-decimal space-y-2 text-sm text-muted-foreground">
                 <li>Pick a topic and practice problems.</li>
-                <li>Matchmaking and duels are coming soon.</li>
                 <li>Solve problems to improve accuracy and speed.</li>
+                <li>Participate in duels to practice coding under pressure.</li>
                 <li>Track streaks, levels, and climb leaderboards.</li>
               </ol>
             </CardContent>

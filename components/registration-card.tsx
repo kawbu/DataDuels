@@ -1,59 +1,96 @@
 "use client"
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createClient } from "@/lib/supabase/supabase-client";
+import { on } from "events";
 
 export default function RegistrationCard() {
-  const [name, setName] = React.useState("");
+  const [mode, setMode] = React.useState<'signup' | 'signin'>('signup');
   const [email, setEmail] = React.useState("");
-  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const supabase = createClient();
+  const router = useRouter();
+  const [message, setMessage] = React.useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    try {
+      if (mode === 'signup') {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          alert(`Error signing up: ${error.message}`);
+          return;
+        } else {
+          setMessage("Check your email to confirm your registration!");
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          alert(`Error signing in: ${error.message}`);
+          return;
+        }
+        // Redirect to welcome page after successful sign in
+        router.push("/welcome");
+      }
+    } finally {
       setLoading(false);
-      alert(`Thanks ${name || username || "friend"}! Placeholder registration complete.`);
-    }, 700);
-  }
+    }
+  };
 
   return (
     <Card id="register">
       <CardHeader>
-        <CardTitle>Create your account</CardTitle>
-        <p className="mt-1 text-sm text-muted-foreground">Join DataDuels — start practicing and dueling instantly.</p>
+        <CardTitle>{mode === 'signup' ? 'Create your account' : 'Sign in to DataDuels'}</CardTitle>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {mode === 'signup'
+            ? 'Join DataDuels to start practicing and dueling instantly.'
+            : 'Welcome back! Sign in to continue.'}
+        </p>
       </CardHeader>
 
       <CardContent>
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
           <div>
-            <Label htmlFor="name" className="sr-only">Username</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Username" />
-          </div>
-
-          <div>
             <Label htmlFor="email" className="sr-only">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" autoComplete="email" />
           </div>
-
           <div>
-            <Label htmlFor="username" className="sr-only">DisplayName</Label>
-            <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a display name" />
+            <Label htmlFor="password" className="sr-only">Password</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} />
           </div>
-
           <div className="mt-3 flex items-center gap-3">
             <Button type="submit" className="flex-1" disabled={loading}>
-              {loading ? "Saving..." : "Create account"}
+              {loading
+                ? mode === 'signup' ? 'Saving...' : 'Signing in...'
+                : mode === 'signup' ? 'Create account' : 'Sign in'}
             </Button>
           </div>
+          {message && (
+            <div className="text-center text-sm text-primary mt-2">{message}</div>
+          )}
         </form>
 
-        <div className="mt-4 text-xs text-muted-foreground">
-          By continuing you agree to our <a className="underline">Terms</a> and <a className="underline">Privacy Policy</a>.
+        <div className="mt-4 text-xs text-muted-foreground flex flex-col items-center gap-2">
+          <span>
+            {mode === 'signup' ? 'Already have an account?' : "Don't have an account?"}
+            <button
+              type="button"
+              className="ml-1 underline text-primary font-medium hover:opacity-80"
+              onClick={() => setMode(mode === 'signup' ? 'signin' : 'signup')}
+            >
+              {mode === 'signup' ? 'Sign in' : 'Sign up'}
+            </button>
+          </span>
+          <span>
+            By continuing you agree to our <a className="underline">Terms</a> and <a className="underline">Privacy Policy</a>.
+          </span>
         </div>
       </CardContent>
     </Card>
