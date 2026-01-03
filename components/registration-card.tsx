@@ -7,12 +7,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/supabase-client";
-import { on } from "events";
 
 export default function RegistrationCard() {
   const [mode, setMode] = React.useState<'signup' | 'signin'>('signup');
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [displayName, setDisplayName] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const supabase = createClient();
   const router = useRouter();
@@ -23,7 +23,18 @@ export default function RegistrationCard() {
     setLoading(true);
     try {
       if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email, password });
+        if (!displayName.trim()) {
+          alert("Display name is required.");
+          setLoading(false);
+          return;
+        }
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { display_name: displayName }
+          }
+        });
         if (error) {
           alert(`Error signing up: ${error.message}`);
           return;
@@ -57,6 +68,20 @@ export default function RegistrationCard() {
 
       <CardContent>
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
+          {mode === 'signup' && (
+            <div>
+              <Label htmlFor="displayName" className="sr-only">Display Name</Label>
+              <Input
+                id="displayName"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Display Name"
+                autoComplete="nickname"
+                required
+              />
+            </div>
+          )}
           <div>
             <Label htmlFor="email" className="sr-only">Email</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" autoComplete="email" />

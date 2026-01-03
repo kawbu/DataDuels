@@ -15,6 +15,15 @@ export default function WelcomePage() {
   const router = useRouter();
   const supabase = createClient();
   const [loading, setLoading] = React.useState(false);
+  const [displayName, setDisplayName] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setDisplayName(user?.user_metadata?.display_name || null);
+    };
+    getUser();
+  }, [supabase]);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -30,7 +39,7 @@ export default function WelcomePage() {
       }
     >
       <h1 className="text-4xl font-extrabold text-primary text-center mb-8">
-        Welcome to DataDuels
+        {`Welcome to DataDuels${displayName ? `, ${displayName}` : ''}`}
       </h1>
       <Button onClick={handleLogout} disabled={loading}>
         {loading ? "Logging out..." : "Log out"}
