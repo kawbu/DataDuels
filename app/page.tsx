@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import NetworkBackgroundClient from "@/components/network-background-client";
 import { Inter } from "next/font/google";
 import { Button } from "@/components/ui/button";
 import { Code } from "lucide-react";
@@ -24,8 +25,9 @@ const inter = Inter({
 
 export default function Home() {
   return (
-    <div className={`${inter.className} flex min-h-screen items-center justify-center bg-background`}>
-      <main className="container mx-auto flex w-full max-w-6xl items-center gap-12 px-6 py-20">
+    <div className={`${inter.className} relative min-h-screen flex items-center justify-center bg-background`}>
+      <NetworkBackgroundClient />
+      <main className="container mx-auto flex w-full max-w-6xl items-center gap-12 px-6 py-20 relative z-10">
         <section className="flex flex-1 flex-col gap-8">
           {/* logo/title moved to the registration column */}
 
