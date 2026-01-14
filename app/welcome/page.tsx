@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import EditorWithCard from "@/components/editor-with-card";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default function WelcomePage() {
       <Button onClick={handleLogout} disabled={loading}>
         {loading ? "Logging out..." : "Log out"}
       </Button>
+      <EditorWithCard />
     </div>
   );
 }
